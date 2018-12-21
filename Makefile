@@ -1,18 +1,42 @@
-#GPerfTools=/home/wuzhu/tools/gperftools
-# one need set up the PATH to have pprof
-# and LD_LIBRARY_PATH to have libprofiler.so
+### many interesting explation ###
+# when try g++, if put params in different order, it will affect the linker
+# a pragmatic method of handling this is always put "-o mainapp main.o ..."
+# in the first place after "-std=c++11"
 
-#$GPerfTools=/home/bgi902/t/t/gperftools-2.7/bin_out
 ROOT=NULL
-CCFLAGS=-fno-omit-frame-pointer -g -pthread
 
-ALL_BINS=cpu_profiler_example
-all:$(ALL_BINS)
+CC = g++ -std=c++11 
+#CC = g++ -std=c++11 -Wno-format
+c_flag = -g  -I$(ROOT)/include -fno-omit-frame-pointer -pthread -Wl,-Bdynamic -ltcmalloc_and_profiler -fPIC 
+c_ld_flag = -g -L$(ROOT)/lib   -fno-omit-frame-pointer -pthread -Wl,-Bdynamic -ltcmalloc_and_profiler
 
-cpu_profiler_example :cpu_profiler_example.o
-	g++ $(CCFLAGS) -o $@ $^ -L./ -L$(ROOT)/lib -Wl,-Bdynamic -ltcmalloc_and_profiler
+c_files =  \
+$(wildcard *.cpp) $(wildcard *.c)
+h_files = \
+$(wildcard *.hpp) $(wildcard *.h)
+o_files_mess = \
+$(patsubst %.cpp,%.o,${c_files}) $(patsubst %.c,%.o,${c_files})
+o_files = \
+$(filter %.o, $(o_files_mess))
+elf_file=  \
+mainapp.exe
 
-.cpp.o:
-	g++ $(CCFLAGS) -c -I./ -I$(ROOT)/include -fPIC -o $@ $<
+rm_files = \
+*.o *.dep *.elf  *.s *.exe *.exe_*.prof
+
+
+all:$(elf_file)
+
+$(elf_file):$(o_files)
+	$(CC) -o $@ $(o_files) $(c_ld_flag) 
+main.o: main.cpp
+	$(CC) -o $@ -c $< $(c_flag) 
+
 clean:
-	rm -f $(ALL_BINS) *.o cpu_profiler_example_*.prof
+	rm -rf $(rm_files)
+
+run:$(elf_file)
+	./$(elf_file)
+
+
+

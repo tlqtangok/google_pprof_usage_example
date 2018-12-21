@@ -13,7 +13,7 @@
 
 
 
-rm -rf cpu_profiler_example_*.prof 
+rm -rf mainapp.exe_*.prof 
 
 export ROOT=`pwd`/ROOT
 if [ ! -d "$ROOT" ]; then
@@ -25,6 +25,10 @@ export PATH=$ROOT/bin:$PATH
 export LD_LIBRARY_PATH=$ROOT/lib
 
 make -e -f Makefile
-./cpu_profiler_example
 
-pprof -text cpu_profiler_example cpu_profiler_example_*.prof
+#echo '- build success '
+
+./mainapp.exe
+
+#$ROOT/bin/pprof --gv mainapp.exe mainapp.exe_*.prof
+$ROOT/bin/pprof -text mainapp.exe mainapp.exe_*.prof
